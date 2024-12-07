@@ -1,0 +1,9 @@
+{
+  "dockerfile_lines": [],
+  "graphs": {
+    "tts": "./tts/tts_assistant.py.py:graph"
+  },
+  "env": "./.env",
+  "python_version": "3.11",
+  "dependencies": ["."]
+}
