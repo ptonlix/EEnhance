@@ -1,4 +1,38 @@
+from eenhance.tts import tts_assistant
 from eenhance.topic import topic_assistant
+from eenhance.research import research_assistant
+import os
+from eenhance.constants import PROJECT_ROOT_PATH
+
+
+def test_tts_assistant():
+    # 创建线程配置
+    file_path = os.path.join(
+        PROJECT_ROOT_PATH,
+        "data/transcripts/transcript_b333727249334af0adaa552f66ba4067.txt",
+    )
+    input_data = {
+        "blog_content": "",
+        "blog_file_path": file_path,
+        "tts_provider": "openai",
+        "tts_is_open": True,
+    }
+    thread = {"configurable": {"thread_id": "1"}}
+
+    # 第一次运行图直到中断
+    for event in tts_assistant.graph.stream(input_data, thread, stream_mode="values"):
+        print(event)
+
+    # 获取用户输入
+    user_input = input("是否需要重新生成主题? (y/n): ")
+
+    # 再次运行图
+    for event in tts_assistant.graph.stream(
+        None,
+        thread,
+        stream_mode="values",
+    ):
+        print(event)
 
 
 def test_topic_assistant():
@@ -67,10 +101,66 @@ def test_topic_assistant():
         print(event)
 
 
+def test_research_assistant():
+    input_data = {"topic": "人工智能在医疗领域的应用", "max_analysts": 3}
+    thread = {"configurable": {"thread_id": "1"}}
+    for event in research_assistant.graph.stream(
+        input_data, thread, stream_mode="values"
+    ):
+        # Review
+        analysts = event.get("analysts", "")
+        if analysts:
+            for analyst in analysts:
+                print(f"Name: {analyst.name}")
+                print(f"Affiliation: {analyst.affiliation}")
+                print(f"Role: {analyst.role}")
+                print(f"Description: {analyst.description}")
+                print("-" * 50)
+    # We now update the state as if we are the human_feedback node
+    human_feedback = input("请输入反馈: ")
+    research_assistant.graph.update_state(
+        thread,
+        {"human_analyst_feedback": human_feedback},
+        as_node="human_feedback",
+    )
+
+    for event in research_assistant.graph.stream(None, thread, stream_mode="values"):
+        # Review
+        analysts = event.get("analysts", "")
+        if analysts:
+            for analyst in analysts:
+                print(f"Name: {analyst.name}")
+                print(f"Affiliation: {analyst.affiliation}")
+                print(f"Role: {analyst.role}")
+                print(f"Description: {analyst.description}")
+                print("-" * 50)
+    # We now update the state as if we are the human_feedback node
+    human_feedback = input("请输入反馈: ")
+    research_assistant.graph.update_state(
+        thread,
+        {"human_analyst_feedback": human_feedback},
+        as_node="human_feedback",
+    )
+
+    # Continue
+    for event in research_assistant.graph.stream(None, thread, stream_mode="updates"):
+        print("--Node--")
+        node_name = next(iter(event.keys()))
+        print(node_name)
+
+    final_state = research_assistant.graph.get_state(thread)
+    report = final_state.values.get("final_report")
+    print(report)
+
+
 if __name__ == "__main__":
     from eenhance.utils.config import load_config
 
     config = load_config()
     print(config)
 
-    test_topic_assistant()
+    # test_topic_assistant()
+
+    # test_research_assistant()
+
+    test_tts_assistant()

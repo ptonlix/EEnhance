@@ -37,6 +37,8 @@ def tts(state: TTSInput) -> TTSOutput:
     ) as file:
         input_text = file.read()
 
+    print(input_text)
+
     tts_edge = TextToSpeech(model=state["tts_provider"])
     edge_output_file = "tests/data/response_edge.mp3"
     tts_edge.convert_to_speech(input_text, edge_output_file)

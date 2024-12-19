@@ -19,6 +19,8 @@ class OpenAITTS(TTSProvider):
             api_key: OpenAI API key. If None, expects OPENAI_API_KEY env variable
             model: Model name to use. Defaults to "tts-1-hd"
         """
+
+        # openai.base_url = "https://oa.api2d.net/v1/"
         if api_key:
             openai.api_key = api_key
         elif not openai.api_key:

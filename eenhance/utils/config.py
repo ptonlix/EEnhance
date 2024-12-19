@@ -39,15 +39,28 @@ def get_config_path(config_file: str = "config.yaml"):
         return None
 
 
+def singleton(cls):
+    """单例模式装饰器"""
+    _instance = {}
+
+    def _singleton(*args, **kwargs):
+        if cls not in _instance:
+            _instance[cls] = cls(*args, **kwargs)
+        return _instance[cls]
+
+    return _singleton
+
+
+@singleton
 class Config:
     def __init__(self, config_file: str = "config.yaml"):
         """
-        Initialize the Config class by loading environment variables and YAML configuration.
+        初始化Config类,加载环境变量和YAML配置。
 
         Args:
-                config_file (str): Path to the YAML configuration file. Defaults to 'config.yaml'.
+                config_file (str): YAML配置文件路径。默认为'config.yaml'。
         """
-        # Try to find .env file
+        # 尝试查找.env文件
         dotenv_path = find_dotenv(usecwd=True)
         if dotenv_path:
             load_dotenv(dotenv_path)
@@ -56,7 +69,9 @@ class Config:
                 "Warning: .env file not found. Using environment variables if available."
             )
 
-        # Load API keys from environment variables
+        print(os.getenv("OPENAI_API_BASE", ""))
+
+        # 从环境变量加载API密钥
         self.GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
         self.OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
         self.ELEVENLABS_API_KEY: str = os.getenv("ELEVENLABS_API_KEY", "")
@@ -69,25 +84,25 @@ class Config:
             print("Could not locate config.yaml")
             self.config = {}
 
-        # Set attributes based on YAML config
+        # 根据YAML配置设置属性
         self._set_attributes()
 
     def _set_attributes(self):
-        """Set attributes based on the current configuration."""
+        """根据当前配置设置属性"""
         for key, value in self.config.items():
             setattr(self, key.upper(), value)
 
-        # Ensure output directories exist
+        # 确保输出目录存在
         if "output_directories" in self.config:
             for dir_type, dir_path in self.config["output_directories"].items():
                 os.makedirs(dir_path, exist_ok=True)
 
     def configure(self, **kwargs):
         """
-        Configure the settings by updating the config dictionary and relevant attributes.
+        通过更新配置字典和相关属性来配置设置。
 
         Args:
-                **kwargs: Keyword arguments representing configuration keys and values to update.
+                **kwargs: 表示要更新的配置键和值的关键字参数。
         """
         for key, value in kwargs.items():
             if key in self.config:
@@ -102,19 +117,19 @@ class Config:
             else:
                 raise ValueError(f"Unknown configuration key: {key}")
 
-        # Update attributes based on the new configuration
+        # 根据新配置更新属性
         self._set_attributes()
 
     def get(self, key: str, default: Optional[Any] = None) -> Any:
         """
-        Get a configuration value by key.
+        通过键获取配置值。
 
         Args:
-                key (str): The configuration key to retrieve.
-                default (Optional[Any]): The default value if the key is not found.
+                key (str): 要检索的配置键。
+                default (Optional[Any]): 如果未找到键时的默认值。
 
         Returns:
-                Any: The value associated with the key, or the default value if not found.
+                Any: 与键关联的值,如果未找到则返回默认值。
         """
         return self.config.get(key, default)
 
