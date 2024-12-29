@@ -7,12 +7,14 @@ from .providers.openai import OpenAITTS
 from .providers.edge import EdgeTTS
 from .providers.gemini import GeminiTTS
 from .providers.geminimulti import GeminiMultiTTS
+from .providers.fish import FishTTS
 
 
 class TTSProviderFactory:
     """Factory class for creating TTS providers."""
 
     _providers: Dict[str, Type[TTSProvider]] = {
+        "fish": FishTTS,
         "elevenlabs": ElevenLabsTTS,
         "openai": OpenAITTS,
         "edge": EdgeTTS,
@@ -24,6 +26,7 @@ class TTSProviderFactory:
     def create(
         cls,
         provider_name: str,
+        base_url: Optional[str] = None,
         api_key: Optional[str] = None,
         model: Optional[str] = None,
     ) -> TTSProvider:
@@ -34,7 +37,7 @@ class TTSProviderFactory:
             provider_name: Name of the provider to create
             api_key: Optional API key for the provider
             model: Optional model name for the provider
-
+            base_url: Optional base URL for the provider
         Returns:
             TTSProvider instance
 
@@ -49,7 +52,9 @@ class TTSProviderFactory:
             )
 
         return (
-            provider_class(api_key, model) if api_key else provider_class(model=model)
+            provider_class(base_url, api_key, model)
+            if api_key
+            else provider_class(model=model)
         )
 
     @classmethod

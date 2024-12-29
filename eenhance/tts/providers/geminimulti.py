@@ -14,7 +14,12 @@ logger = logging.getLogger(__name__)
 class GeminiMultiTTS(TTSProvider):
     """Google Cloud Text-to-Speech provider with multi-speaker support."""
 
-    def __init__(self, api_key: str = None, model: str = "en-US-Studio-MultiSpeaker"):
+    def __init__(
+        self,
+        base_url: str = None,
+        api_key: str = None,
+        model: str = "en-US-Studio-MultiSpeaker",
+    ):
         """
         Initialize Google Cloud TTS provider.
 
@@ -24,7 +29,9 @@ class GeminiMultiTTS(TTSProvider):
         self.model = model
         try:
             self.client = texttospeech_v1beta1.TextToSpeechClient(
-                client_options={"api_key": api_key} if api_key else None
+                client_options=(
+                    {"api_endpoint": base_url, "api_key": api_key} if api_key else None
+                )
             )
             logger.info("Successfully initialized GeminiMultiTTS client")
         except Exception as e:

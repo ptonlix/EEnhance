@@ -5,7 +5,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 import logging
 from langchain.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
+from eenhance.utils.llm import llm_factory
 from langchain.output_parsers import CommaSeparatedListOutputParser
 
 logger = logging.getLogger(__name__)
@@ -65,7 +65,7 @@ def generate_topics(state: ResearchInput) -> ResearchOutput:
         )
 
         # 初始化LLM
-        llm = ChatOpenAI(temperature=0.7, model_name="gpt-4o")
+        llm = llm_factory.create_llm(use_case="topic", temperature=0.7)
 
         # 生成主题
         _input = prompt.format(

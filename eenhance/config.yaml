@@ -1,14 +1,25 @@
-content_generator:
-  llm_model: "gemini-1.5-pro-latest"
-  meta_llm_model: "gemini-1.5-pro-latest"
+blog:
+  llm_model: "glm-4-plus"
+  api_key_env: "GLM_API_KEY"
+  api_base_env: "GLM_API_BASE"
   max_output_tokens: 8192
 
 research:
   llm_model: "deepseek-chat"
+  api_key_env: "DEEPSEEK_API_KEY"
+  api_base_env: "DEEPSEEK_API_BASE"
   temperature: 0
+
 topic:
   llm_model: "deepseek-chat"
+  api_key_env: "DEEPSEEK_API_KEY"
+  api_base_env: "DEEPSEEK_API_BASE"
   temperature: 0
+
+tts:
+  tts_model: "openai"
+  api_key_env: "OPENAI_API_KEY"
+  api_base_env: "OPENAI_API_BASE"
 
 content_extractor:
   youtube_url_patterns:

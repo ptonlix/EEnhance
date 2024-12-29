@@ -8,12 +8,13 @@ from ..base import TTSProvider
 
 
 class EdgeTTS(TTSProvider):
-    def __init__(self, api_key: str = None, model: str = None):
+    def __init__(self, base_url: str = None, api_key: str = None, model: str = None):
         """
         Initialize Edge TTS provider.
 
         Args:
-            api_key (str): Not used for Edge TTS
+            base_url (str): Base URL for Edge TTS
+            api_key (str): API key for Edge TTS
             model (str): Model name to use
         """
         self.model = (

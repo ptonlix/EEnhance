@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 class GeminiTTS(TTSProvider):
     """Google Cloud Text-to-Speech provider for single speaker."""
 
-    def __init__(self, api_key: str = None, model: str = "en-US-Journey-F"):
+    def __init__(
+        self, base_url: str = None, api_key: str = None, model: str = "en-US-Journey-F"
+    ):
         """
         Initialize Google Cloud TTS provider.
 
@@ -22,7 +24,9 @@ class GeminiTTS(TTSProvider):
         self.model = model
         try:
             self.client = texttospeech_v1beta1.TextToSpeechClient(
-                client_options={"api_key": api_key} if api_key else None
+                client_options=(
+                    {"api_endpoint": base_url, "api_key": api_key} if api_key else None
+                )
             )
         except Exception as e:
             logger.error(f"Failed to initialize Google TTS client: {str(e)}")

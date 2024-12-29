@@ -11,16 +11,23 @@ class OpenAITTS(TTSProvider):
     # Provider-specific SSML tags
     PROVIDER_SSML_TAGS: List[str] = ["break", "emphasis"]
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "tts-1-hd"):
+    def __init__(
+        self,
+        base_url: Optional[str] = None,
+        api_key: Optional[str] = None,
+        model: str = "tts-1-hd",
+    ):
         """
         Initialize OpenAI TTS provider.
 
         Args:
+            base_url: OpenAI API base URL. If None, expects OPENAI_API_BASE env variable
             api_key: OpenAI API key. If None, expects OPENAI_API_KEY env variable
             model: Model name to use. Defaults to "tts-1-hd"
         """
 
-        # openai.base_url = "https://oa.api2d.net/v1/"
+        if base_url:
+            openai.base_url = base_url
         if api_key:
             openai.api_key = api_key
         elif not openai.api_key:

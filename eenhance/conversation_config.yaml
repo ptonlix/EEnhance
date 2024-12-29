@@ -26,6 +26,10 @@ text_to_speech:
   output_directories:
     transcripts: "./data/transcripts"
     audio: "./data/audio"
+  fish:
+    default_voices:
+      question: "7f92f8afb8ec43bf81429cc1c9199cb1"
+      answer: "e80ea225770f42f79d50aa98be3cedfc"
   elevenlabs:
     default_voices:
       question: "Chris"
@@ -38,8 +42,6 @@ text_to_speech:
     model: "tts-1"
   edge:
     default_voices:
-      # question: "en-US-JennyNeural"
-      # answer: "en-US-EricNeural"
       question: "zh-CN-XiaomengNeural"
       answer: "zh-CN-XiaoshuangNeural"
   gemini:

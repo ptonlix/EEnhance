@@ -1,6 +1,7 @@
 from eenhance.tts import tts_assistant
 from eenhance.topic import topic_assistant
 from eenhance.research import research_assistant
+from eenhance.blog import blog_assistant
 import os
 from eenhance.constants import PROJECT_ROOT_PATH
 
@@ -9,12 +10,12 @@ def test_tts_assistant():
     # 创建线程配置
     file_path = os.path.join(
         PROJECT_ROOT_PATH,
-        "data/transcripts/transcript_b333727249334af0adaa552f66ba4067.txt",
+        "data/transcripts/research_report_blog.txt",
     )
     input_data = {
         "blog_content": "",
         "blog_file_path": file_path,
-        "tts_provider": "openai",
+        "tts_provider": "fish",
         "tts_is_open": True,
     }
     thread = {"configurable": {"thread_id": "1"}}
@@ -24,7 +25,7 @@ def test_tts_assistant():
         print(event)
 
     # 获取用户输入
-    user_input = input("是否需要重新生成主题? (y/n): ")
+    user_input = input("是否需要重新生成音频? (y/n): ")
 
     # 再次运行图
     for event in tts_assistant.graph.stream(
@@ -33,6 +34,36 @@ def test_tts_assistant():
         stream_mode="values",
     ):
         print(event)
+
+
+def test_blog_assistant():
+    input_data = {
+        "research_report": "人工智能和机器学习正在改变我们的生活方式。深度学习模型能够识别图像、理解自然语言,并在各个领域取得突破性进展。",
+        "research_report_file": "data/reports/research_report.txt",
+        "regenerate": False,
+    }
+    thread = {"configurable": {"thread_id": "1"}}
+    for event in blog_assistant.graph.stream(input_data, thread, stream_mode="values"):
+        print(event)
+
+    # 获取用户输入
+    while True:
+        user_input = input("是否需要生成博客文案? (y/n): ")
+        if user_input.lower() == "y":
+            input_data["regenerate"] = True
+            # 更新状态
+            blog_assistant.graph.update_state(
+                thread, input_data, as_node="human_feedback"
+            )
+            # 再次运行图
+            for event in blog_assistant.graph.stream(
+                None,
+                thread,
+                stream_mode="values",
+            ):
+                print(event)
+        else:
+            break
 
 
 def test_topic_assistant():
@@ -164,3 +195,4 @@ if __name__ == "__main__":
     # test_research_assistant()
 
     test_tts_assistant()
+    # test_blog_assistant()

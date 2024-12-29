@@ -6,7 +6,12 @@ from typing import List
 
 
 class ElevenLabsTTS(TTSProvider):
-    def __init__(self, api_key: str, model: str = "eleven_multilingual_v2"):
+    def __init__(
+        self,
+        base_url: str = None,
+        api_key: str = None,
+        model: str = "eleven_multilingual_v2",
+    ):
         """
         Initialize ElevenLabs TTS provider.
 
@@ -14,7 +19,7 @@ class ElevenLabsTTS(TTSProvider):
             api_key (str): ElevenLabs API key
             model (str): Model name to use. Defaults to "eleven_multilingual_v2"
         """
-        self.client = elevenlabs_client.ElevenLabs(api_key=api_key)
+        self.client = elevenlabs_client.ElevenLabs(api_key=api_key, base_url=base_url)
         self.model = model
 
     def generate_audio(

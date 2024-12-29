@@ -20,9 +20,9 @@ langchain-core = "^0.3.21"
 langsmith = "^0.1.147"
 youtube-transcript-api = "^0.6.3"
 pymupdf = "^1.24.14"
-bilibili-api-python = "^16.3.0"
 langchain-openai = "^0.2.11"
 wikipedia = "^1.4.0"
+fish-audio-sdk = "^2024.12.5"
 
 [tool.poetry.group.dev.dependencies]
 notebook = "^7.2.2"

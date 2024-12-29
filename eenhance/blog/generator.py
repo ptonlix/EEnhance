@@ -11,15 +11,13 @@ from typing import Optional, Dict, Any, List
 import re
 
 
-from langchain_community.llms.llamafile import Llamafile
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain import hub
 from eenhance.utils.config_conversation import load_conversation_config
 from eenhance.utils.config import load_config
 import logging
 from langchain.prompts import HumanMessagePromptTemplate, SystemMessagePromptTemplate
-from langchain_openai import ChatOpenAI
+from eenhance.utils.llm import llm_factory
 from eenhance.blog.prompt import BOLG_PROMPT_TEMPLATE, LONG_BLOG_PROMPT_TEMPLATE
 from abc import ABC, abstractmethod
 
@@ -29,42 +27,22 @@ logger = logging.getLogger(__name__)
 class LLMBackend:
     def __init__(
         self,
-        is_local: bool,
         temperature: float,
         max_output_tokens: int,
         model_name: str,
-        api_key_label: str = "GEMINI_API_KEY",
     ):
-        """
-        Initialize the LLMBackend.
-
-        Args:
-                is_local (bool): Whether to use a local LLM or not.
-                temperature (float): The temperature for text generation.
-                max_output_tokens (int): The maximum number of output tokens.
-                model_name (str): The name of the model to use.
-        """
-        self.is_local = is_local
-        self.temperature = temperature
-        self.max_output_tokens = max_output_tokens
-        self.model_name = model_name
-        self.is_multimodal = not is_local  # Does not assume local LLM is multimodal
-
         common_params = {
             "temperature": temperature,
-            "presence_penalty": 0.75,  # Encourage diverse content
-            "frequency_penalty": 0.75,  # Avoid repetition
+            "presence_penalty": 0.75,
+            "frequency_penalty": 0.75,
+            "max_completion_tokens": max_output_tokens,
         }
 
-        if is_local:
-            self.llm = Llamafile()  # replace with ollama
-        else:  # keeping original gemini as a special case while we build confidence on LiteLLM
-
-            self.llm = ChatOpenAI(
-                model=model_name,
-                max_completion_tokens=max_output_tokens,
-                **common_params,
-            )
+        self.llm = llm_factory.create_llm(
+            use_case="blog",
+            model=model_name,
+            **common_params,
+        )
 
 
 class LongFormContentGenerator:
@@ -633,21 +611,19 @@ class LongFormContentStrategy(ContentGenerationStrategy, ContentCleanerMixin):
 class ContentGenerator:
     def __init__(
         self,
-        is_local: bool = False,
         model_name: str = "gemini-1.5-pro-latest",
-        api_key_label: str = "GEMINI_API_KEY",
         conversation_config: Optional[Dict[str, Any]] = None,
     ):
         """
         Initialize the ContentGenerator.
 
         Args:
-                api_key (str): API key for Google's Generative AI.
+                model_name (str): Model name to use for generation.
+                api_key_label (str): Environment variable name for API key.
                 conversation_config (Optional[Dict[str, Any]]): Custom conversation configuration.
         """
-        # os.environ["GOOGLE_API_KEY"] = api_key
         self.config = load_config()
-        self.content_generator_config = self.config.get("content_generator", {})
+        self.content_generator_config = self.config.get("blog", {})
 
         self.config_conversation = load_conversation_config(conversation_config)
         self.tts_config = self.config_conversation.get("text_to_speech", {})
@@ -661,22 +637,16 @@ class ContentGenerator:
         if transcripts_dir and not os.path.exists(transcripts_dir):
             os.makedirs(transcripts_dir)
 
-        self.is_local = is_local
-
         # Initialize LLM backend
         if not model_name:
             model_name = self.content_generator_config.get("llm_model")
-        if is_local:
-            model_name = "User provided local model"
 
         llm_backend = LLMBackend(
-            is_local=is_local,
             temperature=self.config_conversation.get("creativity", 1),
             max_output_tokens=self.content_generator_config.get(
                 "max_output_tokens", 8192
             ),
             model_name=model_name,
-            api_key_label=api_key_label,
         )
 
         self.llm = llm_backend.llm
@@ -721,9 +691,6 @@ class ContentGenerator:
             image_path_keys.append(key)
             messages.append(image_content)
 
-        # user_prompt_template = ChatPromptTemplate.from_messages(
-        #     messages=[HumanMessagePromptTemplate.from_template(messages)]
-        # )
         user_instructions = self.config_conversation.get("user_instructions", "")
 
         user_instructions = (
@@ -734,13 +701,6 @@ class ContentGenerator:
 
         new_system_message = prompt_template + "\n" + user_instructions
 
-        # Compose messages from podcastfy_prompt_template and user_prompt_template
-        # combined_messages = (
-        #     ChatPromptTemplate.from_messages([("system", new_system_message)]).messages
-        #     + user_prompt_template.messages
-        # )
-
-        # Create a new ChatPromptTemplate object with the combined messages
         composed_prompt_template = ChatPromptTemplate.from_messages(
             [
                 SystemMessagePromptTemplate.from_template(new_system_message),
@@ -765,7 +725,6 @@ class ContentGenerator:
             input_texts (str): Input texts to generate content from.
             image_file_paths (List[str]): List of image file paths.
             output_filepath (Optional[str]): Filepath to save the response content.
-            is_local (bool): Whether to use a local LLM or not.
             model_name (str): Model name to use for generation.
             api_key_label (str): Environment variable name for API key.
             longform (bool): Whether to generate long-form content. Defaults to False.
@@ -785,7 +744,7 @@ class ContentGenerator:
             strategy.validate(input_texts, image_file_paths)
 
             # Setup chain
-            num_images = 0 if self.is_local else len(image_file_paths)
+            num_images = len(image_file_paths)
             self.prompt_template, image_path_keys = self.__compose_prompt(
                 num_images, longform
             )
@@ -828,7 +787,7 @@ if __name__ == "__main__":
 
 ## 引言
 
-随着人工智能（AI）技术的飞速发展，医疗领域正经历一场深刻的变革。本文探讨了AI在个性化医疗中的应用，如何通过提高诊断准确性和优化治疗方案��显著改善患者护理。此外，我们还分析了AI驱动的医疗设备如何创新解决方案，助力医疗资源的均衡分配。最后，报告深入探讨了AI在医疗应用中的挑战与机遇，强调了技术进步与伦理考量并重的重要性。通过这些章节，我们将揭示AI如何重塑医疗行业的未来。
+随着人工智能（AI）技术的飞速发展，医疗领域正经历一场深刻的变革。本文探讨了AI在个性化医疗中的应用，如何通过提高诊断准确性和优化治疗方案显著改善患者护理。此外，我们还分析了AI驱动的医疗设备如何创新解决方案，助力医疗资源的均衡分配。最后，报告深入探讨了AI在医疗应用中的挑战与机遇，强调了技术进步与伦理考量并重的重要性。通过这些章节，我们将揭示AI如何重塑医疗行业的未来。
 
 ---
 
@@ -849,7 +808,7 @@ if __name__ == "__main__":
 
 ## 结论
 
-本报告深入探讨了人工智能在医疗领域的多方面应用及其面临的挑战。首先，**人工智能在个性化医疗中的应用**展示了其在提高诊断准确性和个性化治疗方案中的潜力，特别是在医疗影像分析和肿瘤筛查中的显著成果。其次，**人工智能驱动的��疗设备**为医疗资源均衡分配提供了创新解决方案，尽管面临高成本和技术普及的挑战。最后，**人工智能在医疗领域的应用与挑战**部分强调了AI在实际医疗环境中的应用仍需克服数据隐私、算法可解释性和监管问题。尽管如此，AI技术的不断进步预示着其在医疗领域的广阔前景。
+本报告深入探讨了人工智能在医疗领域的多方面应用及其面临的挑战。首先，**人工智能在个性化医疗中的应用**展示了其在提高诊断准确性和个性化治疗方案中的潜力，特别是在医疗影像分析和肿瘤筛查中的显著成果。其次，**人工智能驱动的医疗设备**为医疗资源均衡分配提供了创新解决方案，尽管面临高成本和技术普及的挑战。最后，**人工智能在医疗领域的应用与挑战**部分强调了AI在实际医疗环境中的应用仍需克服数据隐私、算法可解释性和监管问题。尽管如此，AI技术的不断进步预示着其在医疗领域的广阔前景。
 
 ## 来源
 
@@ -864,7 +823,6 @@ if __name__ == "__main__":
 
     content_generator = ContentGenerator(
         model_name="glm-4-plus",
-        api_key_label="OPENAI_API_KEY",
         conversation_config=conv_config.to_dict(),
     )
 

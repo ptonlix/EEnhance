@@ -2,23 +2,14 @@ from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
 )
-from langchain_openai import ChatOpenAI
-
 from langgraph.constants import Send
 from langgraph.graph import END, START, StateGraph
 from langgraph.checkpoint.memory import MemorySaver
-from eenhance.utils.config import load_config
 from .schemas import GenerateAnalystsState, ResearchGraphState, Perspectives
 from .interview_assistant import interview_builder
+from eenhance.utils.llm import llm_factory
 
-config = load_config()
-
-# LLM
-
-llm = ChatOpenAI(model="deepseek-chat", temperature=0)
-
-
-# Nodes and edges
+llm = llm_factory.create_llm(use_case="research", temperature=0)
 
 # 分析师创建指令
 analyst_instructions = """你的任务是创建一组AI分析师角色。请仔细遵循以下说明:

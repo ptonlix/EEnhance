@@ -4,6 +4,8 @@ from langgraph.checkpoint.memory import MemorySaver
 from ..utils.config import load_config
 from .text_to_speech import TextToSpeech
 import logging
+from pathlib import Path
+from eenhance.constants import PROJECT_ROOT_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -23,28 +25,30 @@ class TTSOutput(TypedDict):
 
 # no-op node that should be interrupted on
 def human_feedback(state: TTSInput):
-    print(state)
+    pass
 
 
 def tts(state: TTSInput) -> TTSOutput:
-    # Load configuration
-    config = load_config()
 
-    # Read input text from file
-    with open(
-        state["blog_file_path"],
-        "r",
-    ) as file:
-        input_text = file.read()
+    if state.get("blog_content"):
+        input_text = state["blog_content"]
+    else:
+        # Read input text from file
+        with open(
+            state["blog_file_path"],
+            "r",
+        ) as file:
+            input_text = file.read()
 
     print(input_text)
 
     tts_edge = TextToSpeech(model=state["tts_provider"])
-    edge_output_file = "tests/data/response_edge.mp3"
-    tts_edge.convert_to_speech(input_text, edge_output_file)
-    logger.info(f"Edge TTS completed. Output saved to {edge_output_file}")
+    file_name = Path(state["blog_file_path"]).stem + "_tts.mp3"
+    tts_output_file = Path(PROJECT_ROOT_PATH) / "data" / "audio" / file_name
+    tts_edge.convert_to_speech(input_text, tts_output_file)
+    logger.info(f"Convert TTS completed. Output saved to {tts_output_file}")
 
-    return TTSOutput(audio_file_path=edge_output_file)
+    return TTSOutput(audio_file_path=tts_output_file)
 
 
 def router(state: TTSInput):

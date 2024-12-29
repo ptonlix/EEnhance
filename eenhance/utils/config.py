@@ -69,12 +69,14 @@ class Config:
                 "Warning: .env file not found. Using environment variables if available."
             )
 
-        print(os.getenv("OPENAI_API_BASE", ""))
-
         # 从环境变量加载API密钥
         self.GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+        self.GEMINI_API_BASE: str = os.getenv("GEMINI_API_BASE", "")
         self.OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+        self.OPENAI_API_BASE: str = os.getenv("OPENAI_API_BASE", "")
         self.ELEVENLABS_API_KEY: str = os.getenv("ELEVENLABS_API_KEY", "")
+        self.ELEVENLABS_API_BASE: str = os.getenv("ELEVENLABS_API_BASE", "")
+        self.FISH_API_KEY: str = os.getenv("FISH_API_KEY", "")
 
         config_path = get_config_path(config_file)
         if config_path:

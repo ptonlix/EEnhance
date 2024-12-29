@@ -25,6 +25,7 @@ class TextToSpeech:
     def __init__(
         self,
         model: str = None,
+        base_url: Optional[str] = None,
         api_key: Optional[str] = None,
         conversation_config: Optional[Dict[str, Any]] = None,
     ):
@@ -41,6 +42,10 @@ class TextToSpeech:
         self.conversation_config = load_conversation_config(conversation_config)
         self.tts_config = self.conversation_config.get("text_to_speech", {})
 
+        if not base_url:
+            base_url = getattr(
+                self.config, f"{model.upper().replace('MULTI', '')}_API_BASE", None
+            )
         # Get API key from config if not provided
         if not api_key:
             api_key = getattr(
@@ -49,7 +54,7 @@ class TextToSpeech:
 
         # Initialize provider using factory
         self.provider = TTSProviderFactory.create(
-            provider_name=model, api_key=api_key, model=model
+            provider_name=model, base_url=base_url, api_key=api_key, model=model
         )
 
         # Setup directories and config
