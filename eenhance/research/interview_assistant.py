@@ -67,18 +67,27 @@ def search_web(state: InterviewState):
     structured_llm = llm.with_structured_output(SearchQuery)
     search_query = structured_llm.invoke([search_instructions] + state["messages"])
 
-    # Search
-    search_docs = tavily_search.invoke(search_query.search_query)
+    try:
+        # Search
+        search_docs = tavily_search.invoke(search_query.search_query)
 
-    # Format
-    formatted_search_docs = "\n\n---\n\n".join(
-        [
-            f'<Document href="{doc["url"]}"/>\n{doc["content"]}\n</Document>'
-            for doc in search_docs
-        ]
-    )
+        # 检查搜索结果是否为空
+        if not search_docs:
+            return {"context": ["未找到相关搜索结果"]}
 
-    return {"context": [formatted_search_docs]}
+        # Format
+        formatted_search_docs = "\n\n---\n\n".join(
+            [
+                f'<Document href="{doc["url"]}"/>\n{doc["content"]}\n</Document>'
+                for doc in search_docs
+            ]
+        )
+
+        return {"context": [formatted_search_docs]}
+
+    except Exception as e:
+        # 捕获所有可能的异常
+        return {"context": [f"搜索过程中出现错误: {str(e)}"]}
 
 
 def search_wikipedia(state: InterviewState):
@@ -88,20 +97,29 @@ def search_wikipedia(state: InterviewState):
     structured_llm = llm.with_structured_output(SearchQuery)
     search_query = structured_llm.invoke([search_instructions] + state["messages"])
 
-    # Search
-    search_docs = WikipediaLoader(
-        query=search_query.search_query, load_max_docs=2
-    ).load()
+    try:
+        # Search
+        search_docs = WikipediaLoader(
+            query=search_query.search_query, load_max_docs=2
+        ).load()
 
-    # Format
-    formatted_search_docs = "\n\n---\n\n".join(
-        [
-            f'<Document source="{doc.metadata["source"]}" page="{doc.metadata.get("page", "")}"/>\n{doc.page_content}\n</Document>'
-            for doc in search_docs
-        ]
-    )
+        # 检查搜索结果是否为空
+        if not search_docs:
+            return {"context": ["未在维基百科中找到相关结果"]}
 
-    return {"context": [formatted_search_docs]}
+        # Format
+        formatted_search_docs = "\n\n---\n\n".join(
+            [
+                f'<Document source="{doc.metadata["source"]}" page="{doc.metadata.get("page", "")}"/>\n{doc.page_content}\n</Document>'
+                for doc in search_docs
+            ]
+        )
+
+        return {"context": [formatted_search_docs]}
+
+    except Exception as e:
+        # 捕获所有可能的异常
+        return {"context": [f"维基百科搜索过程中出现错误: {str(e)}"]}
 
 
 # Generate expert answer

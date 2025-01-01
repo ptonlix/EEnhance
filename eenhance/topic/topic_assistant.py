@@ -12,26 +12,27 @@ logger = logging.getLogger(__name__)
 
 
 # 研究主题助手的输入参数
-class ResearchInput(TypedDict):
-    content: str  # 主要输入的内容
+class TopicInput(TypedDict):
+    out_content: str  # 主要输入的内容
     additional_info: str | None  # 用户提供的额外信息
     selected_topic: str | None  # 用户选择的主题
     regenerate: bool  # 是否需要重新生成主题
 
 
 # 研究主题助手的输出参数
-class ResearchOutput(TypedDict):
+class TopicOutput(TypedDict):
     topics: list[str]  # 生成的研究主题列表
     selected_topic: str | None  # 最终选定的主题
     error: str | None
 
 
-def human_feedback(state: ResearchInput):
-    print(state)
+def human_feedback(state: TopicInput):
+    pass
 
 
-def generate_topics(state: ResearchInput) -> ResearchOutput:
+def generate_topics(state: TopicInput) -> TopicOutput:
     try:
+
         # 创建输出解析器
         output_parser = CommaSeparatedListOutputParser()
 
@@ -69,22 +70,22 @@ def generate_topics(state: ResearchInput) -> ResearchOutput:
 
         # 生成主题
         _input = prompt.format(
-            content=state["content"], additional_info_prompt=additional_info_prompt
+            content=state["out_content"], additional_info_prompt=additional_info_prompt
         )
         topics = llm.invoke(_input)
-        topics = output_parser.parse(topics)
+        topics = output_parser.parse(topics.content)
 
-        return ResearchOutput(
+        return TopicOutput(
             topics=topics[:3],  # 确保只返回3个主题
             selected_topic=state.get("selected_topic"),
             error=None,
         )
     except Exception as e:
         logger.error(f"Error generating topics: {str(e)}")
-        return ResearchOutput(topics=[], selected_topic=None, error=str(e))
+        return TopicOutput(topics=[], selected_topic=None, error=str(e))
 
 
-def router(state: ResearchInput):
+def router(state: TopicInput):
     if state.get("selected_topic"):
         return "end"
     elif state.get("regenerate"):
@@ -94,7 +95,7 @@ def router(state: ResearchInput):
 
 
 # 创建状态图
-graph = StateGraph(input=ResearchInput, output=ResearchOutput)
+graph = StateGraph(input=TopicInput, output=TopicOutput)
 
 # 添加节点
 graph.add_node("human_feedback", human_feedback)

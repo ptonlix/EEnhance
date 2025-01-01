@@ -1,198 +1,177 @@
-from eenhance.tts import tts_assistant
-from eenhance.topic import topic_assistant
-from eenhance.research import research_assistant
-from eenhance.blog import blog_assistant
-import os
-from eenhance.constants import PROJECT_ROOT_PATH
+from eenhance.main import graph
 
 
-def test_tts_assistant():
-    # 创建线程配置
-    file_path = os.path.join(
-        PROJECT_ROOT_PATH,
-        "data/transcripts/research_report_blog.txt",
-    )
-    input_data = {
-        "blog_content": "",
-        "blog_file_path": file_path,
-        "tts_provider": "fish",
-        "tts_is_open": True,
-    }
+def console_main():
+
+    # 1.根据文章地址获取文章内容
+    input_data = {"content_is_open": False}
     thread = {"configurable": {"thread_id": "1"}}
+    for event in graph.stream(input_data, thread, stream_mode="values", subgraphs=True):
+        pass
 
-    # 第一次运行图直到中断
-    for event in tts_assistant.graph.stream(input_data, thread, stream_mode="values"):
-        print(event)
-
-    # 获取用户输入
-    user_input = input("是否需要重新生成音频? (y/n): ")
-
-    # 再次运行图
-    for event in tts_assistant.graph.stream(
-        None,
-        thread,
-        stream_mode="values",
-    ):
-        print(event)
-
-
-def test_blog_assistant():
-    input_data = {
-        "research_report": "人工智能和机器学习正在改变我们的生活方式。深度学习模型能够识别图像、理解自然语言,并在各个领域取得突破性进展。",
-        "research_report_file": "data/reports/research_report.txt",
-        "regenerate": False,
-    }
-    thread = {"configurable": {"thread_id": "1"}}
-    for event in blog_assistant.graph.stream(input_data, thread, stream_mode="values"):
-        print(event)
-
-    # 获取用户输入
+    # 1.获取文章内容
     while True:
-        user_input = input("是否需要生成博客文案? (y/n): ")
+        user_input = input("确认是否需要获取文章内容 (y/n): ")
         if user_input.lower() == "y":
-            input_data["regenerate"] = True
-            # 更新状态
-            blog_assistant.graph.update_state(
-                thread, input_data, as_node="human_feedback"
+            source = input("请输入需要分析的文章地址: ")
+            input_data["content_is_open"] = True
+            input_data["source"] = source
+
+            state = graph.get_state(thread, subgraphs=True)
+            graph.update_state(
+                state.tasks[0].state.config, input_data, as_node="human_feedback"
             )
             # 再次运行图
-            for event in blog_assistant.graph.stream(
+            for update in graph.stream(
                 None,
                 thread,
-                stream_mode="values",
+                stream_mode="updates",
+                subgraphs=True,
             ):
-                print(event)
+                print(update)
         else:
+            input_data["content_is_open"] = False
+            state = graph.get_state(thread, subgraphs=True)
+            graph.update_state(
+                state.tasks[0].state.config, input_data, as_node="human_feedback"
+            )
+            # 再次运行图
+            for update in graph.stream(
+                None,
+                thread,
+                stream_mode="updates",
+                subgraphs=True,
+            ):
+                print(update)
             break
 
+    # 2.根据文章内容获取主题
 
-def test_topic_assistant():
-    # 准备测试输入数据
-    input_data = {
-        "content": "人工智能和机器学习正在改变我们的生活方式。深度学习模型能够识别图像、理解自然语言,并在各个领域取得突破性进展。",
-        "additional_info": "希望研究AI在医疗领域的应用",
-        "selected_topic": None,
-        "regenerate": False,
-    }
+    additional_info = input("请输入生成研究主题的额外信息: ")
+    input_data["out_content"] = (
+        "文件分配方法对文件系统的性能和可靠性是基本且重要的。选择分配方法取决于各种因素，包括： 预期文件大小和访问模式 性能要求 存储设备特性 可靠性要求 系统资源 现代文件系统通常采用混合方法，结合多种分配方法，以在不同使用案例中实现最优性能"
+    )
+    input_data["additional_info"] = additional_info
+    input_data["selected_topic"] = None
+    input_data["regenerate"] = True
 
-    # 创建线程配置
-    thread = {"configurable": {"thread_id": "1"}}
-
-    # 第一次运行图直到中断
-    for event in topic_assistant.graph.stream(input_data, thread, stream_mode="values"):
-        print(event)
-
-    # 获取用户输入
-    user_input = input("是否需要重新生成主题? (y/n): ")
-    if user_input.lower() == "y":
-        input_data["regenerate"] = True
-    else:
-        input_data["regenerate"] = False
-    # 获取用户输入并更新状态
-    print(input_data)
-
-    # 更新状态
-    topic_assistant.graph.update_state(thread, input_data, as_node="human_feedback")
+    state = graph.get_state(thread, subgraphs=True)
+    graph.update_state(
+        state.tasks[0].state.config, input_data, as_node="human_feedback"
+    )
 
     # 再次运行图
-    for event in topic_assistant.graph.stream(
+    for update in graph.stream(
         None,
         thread,
-        stream_mode="values",
+        stream_mode="updates",
+        subgraphs=True,
     ):
-        print(event)
-    # 显示主题列表供用户选择
-    print("\n请选择一个主题:")
-    for i, topic in enumerate(event["topics"], 1):
-        print(f"{i}. {topic}")
-
-    # 获取用户选择
+        print(update)
     while True:
-        try:
-            choice = int(input("\n请输入主题序号(1-3): "))
-            if 1 <= choice <= len(event["topics"]):
-                input_data["selected_topic"] = event["topics"][choice - 1]
-                break
-            else:
-                print("无效的选择,请输入1-3之间的数字")
-        except ValueError:
-            print("请输入有效的数字")
+        user_input = input("确认是否需要生成研究方向 (y/n): ")
+        if user_input.lower() == "y":
+            state = graph.get_state(thread, subgraphs=True)
+            additional_info = input("请输入生成研究主题的额外信息: ")
+            input_data["regenerate"] = True
+            input_data["additional_info"] = additional_info
+            graph.update_state(
+                state.tasks[0].state.config, input_data, as_node="human_feedback"
+            )
+            # 再次运行图
+            for update in graph.stream(
+                None,
+                thread,
+                stream_mode="updates",
+                subgraphs=True,
+            ):
+                print(update)
+        else:
+            # 显示主题列表供用户选择
+            state = graph.get_state(thread, subgraphs=True)
+            event = state.tasks[0].state.values
+            for i, topic in enumerate(event["topics"], 1):
+                print(f"{i}. {topic}")
 
-    print(input_data)
+            # 获取用户选择
+            while True:
+                try:
+                    choice = int(input("\n请输入主题序号(1-3): "))
+                    if 1 <= choice <= len(event["topics"]):
+                        input_data["regenerate"] = False
+                        input_data["selected_topic"] = event["topics"][choice - 1]
+                        break
+                    else:
+                        print("无效的选择,请输入1-3之间的数字")
+                except ValueError:
+                    print("请输入有效的数字")
 
-    # 更新状态
-    topic_assistant.graph.update_state(thread, input_data, as_node="human_feedback")
+            graph.update_state(state.tasks[0].state.config, input_data)
+            # 再次运行图
+            for update in graph.stream(
+                None,
+                thread,
+                stream_mode="updates",
+                subgraphs=True,
+            ):
+                print(update)
+            break
 
-    # 最后运行图
-    for event in topic_assistant.graph.stream(
+    # 3.根据主题生成研究报告
+    state = graph.get_state(thread, subgraphs=True)
+    input_data["topic"] = input_data["selected_topic"]
+    input_data["max_analysts"] = 3
+    graph.update_state(state.tasks[0].state.config, input_data, as_node="human_input")
+    # 再次运行图
+    for update in graph.stream(
         None,
         thread,
         stream_mode="values",
+        subgraphs=True,
     ):
-        print(event)
+        print(update)
 
-
-def test_research_assistant():
-    input_data = {"topic": "人工智能在医疗领域的应用", "max_analysts": 3}
-    thread = {"configurable": {"thread_id": "1"}}
-    for event in research_assistant.graph.stream(
-        input_data, thread, stream_mode="values"
+    while True:
+        user_input = input("确认使用采用这些访问者 (y/n): ")
+        if user_input.lower() == "y":
+            state = graph.get_state(thread, subgraphs=True)
+            input_data["human_analyst_feedback"] = "approve"
+            graph.update_state(state.tasks[0].state.config, input_data)
+            # 再次运行图
+            for update in graph.stream(
+                None,
+                thread,
+                stream_mode="updates",
+                subgraphs=True,
+            ):
+                print(update)
+        else:
+            state = graph.get_state(thread, subgraphs=True)
+            input_data["human_analyst_feedback"] = "reject"
+            graph.update_state(state.tasks[0].state.config, input_data)
+            # 再次运行图
+            for update in graph.stream(
+                None,
+                thread,
+                stream_mode="updates",
+                subgraphs=True,
+            ):
+                print(update)
+            break
+    # 4.根据研究报告生成博客文案
+    state = graph.get_state(thread, subgraphs=True)
+    input_data["topic"] = input_data["selected_topic"]
+    input_data["max_analysts"] = 3
+    graph.update_state(state.tasks[0].state.config, input_data, as_node="human_input")
+    # 再次运行图
+    for update in graph.stream(
+        None,
+        thread,
+        stream_mode="values",
+        subgraphs=True,
     ):
-        # Review
-        analysts = event.get("analysts", "")
-        if analysts:
-            for analyst in analysts:
-                print(f"Name: {analyst.name}")
-                print(f"Affiliation: {analyst.affiliation}")
-                print(f"Role: {analyst.role}")
-                print(f"Description: {analyst.description}")
-                print("-" * 50)
-    # We now update the state as if we are the human_feedback node
-    human_feedback = input("请输入反馈: ")
-    research_assistant.graph.update_state(
-        thread,
-        {"human_analyst_feedback": human_feedback},
-        as_node="human_feedback",
-    )
-
-    for event in research_assistant.graph.stream(None, thread, stream_mode="values"):
-        # Review
-        analysts = event.get("analysts", "")
-        if analysts:
-            for analyst in analysts:
-                print(f"Name: {analyst.name}")
-                print(f"Affiliation: {analyst.affiliation}")
-                print(f"Role: {analyst.role}")
-                print(f"Description: {analyst.description}")
-                print("-" * 50)
-    # We now update the state as if we are the human_feedback node
-    human_feedback = input("请输入反馈: ")
-    research_assistant.graph.update_state(
-        thread,
-        {"human_analyst_feedback": human_feedback},
-        as_node="human_feedback",
-    )
-
-    # Continue
-    for event in research_assistant.graph.stream(None, thread, stream_mode="updates"):
-        print("--Node--")
-        node_name = next(iter(event.keys()))
-        print(node_name)
-
-    final_state = research_assistant.graph.get_state(thread)
-    report = final_state.values.get("final_report")
-    print(report)
+        print(update)
+    # 5.根据博客文案生成博客音频
 
 
-if __name__ == "__main__":
-    from eenhance.utils.config import load_config
-
-    config = load_config()
-    print(config)
-
-    # test_topic_assistant()
-
-    # test_research_assistant()
-
-    test_tts_assistant()
-    # test_blog_assistant()
+console_main()

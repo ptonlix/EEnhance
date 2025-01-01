@@ -15,7 +15,7 @@ class ContentInput(TypedDict):
 
 # Content Agent 的输出参数
 class ContentOutput(TypedDict):
-    content: str
+    out_content: str
     error: str | None
 
 
@@ -28,10 +28,10 @@ def extract_content(state: ContentInput) -> ContentOutput:
     try:
         extractor = ContentExtractor()
         content = extractor.extract_content(state["source"])
-        return ContentOutput(content=content, error=None)
+        return ContentOutput(out_content=content, error=None)
     except Exception as e:
         logger.error(f"Error extracting content: {str(e)}")
-        return ContentOutput(content="", error=str(e))
+        return ContentOutput(out_content="", error=str(e))
 
 
 def router(state: ContentInput):

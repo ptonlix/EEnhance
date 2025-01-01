@@ -8,6 +8,9 @@ from langgraph.checkpoint.memory import MemorySaver
 from .schemas import GenerateAnalystsState, ResearchGraphState, Perspectives
 from .interview_assistant import interview_builder
 from eenhance.utils.llm import llm_factory
+import logging
+
+logger = logging.getLogger(__name__)
 
 llm = llm_factory.create_llm(use_case="research", temperature=0)
 
@@ -30,7 +33,7 @@ analyst_instructions = """你的任务是创建一组AI分析师角色。请仔�
 
 def create_analysts(state: GenerateAnalystsState):
     """Create analysts"""
-
+    logger.error(f"Creating analysts with state: {state}")
     topic = state["topic"]
     max_analysts = state["max_analysts"]
     human_analyst_feedback = state.get("human_analyst_feedback", "")
@@ -53,6 +56,11 @@ def create_analysts(state: GenerateAnalystsState):
 
     # Write the list of analysis to state
     return {"analysts": analysts.analysts}
+
+
+def human_input(state: GenerateAnalystsState):
+    """No-op node that should be interrupted on"""
+    pass
 
 
 def human_feedback(state: GenerateAnalystsState):
@@ -234,6 +242,7 @@ def finalize_report(state: ResearchGraphState):
 
 # Add nodes and edges
 builder = StateGraph(ResearchGraphState)
+builder.add_node("human_input", human_input)
 builder.add_node("create_analysts", create_analysts)
 builder.add_node("human_feedback", human_feedback)
 builder.add_node("conduct_interview", interview_builder.compile())
@@ -243,7 +252,8 @@ builder.add_node("write_conclusion", write_conclusion)
 builder.add_node("finalize_report", finalize_report)
 
 # Logic
-builder.add_edge(START, "create_analysts")
+builder.add_edge(START, "human_input")
+builder.add_edge("human_input", "create_analysts")
 builder.add_edge("create_analysts", "human_feedback")
 builder.add_conditional_edges(
     "human_feedback", initiate_all_interviews, ["create_analysts", "conduct_interview"]
@@ -258,4 +268,6 @@ builder.add_edge("finalize_report", END)
 
 # Compile
 memory = MemorySaver()
-graph = builder.compile(interrupt_before=["human_feedback"], checkpointer=memory)
+graph = builder.compile(
+    interrupt_before=["human_input", "human_feedback"], checkpointer=memory
+)

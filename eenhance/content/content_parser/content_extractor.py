@@ -7,11 +7,11 @@ extraction, delegating to specialized extractors based on the source type.
 """
 
 import logging
-import re
-from typing import List, Union
+from typing import List
 from urllib.parse import urlparse
 from .youtube_transcriber import YouTubeTranscriber
-from .bilibili_transcriber import BiliBiliTranscriber
+
+# from .bilibili_transcriber import BiliBiliTranscriber
 from .website_extractor import WebsiteExtractor
 from .pdf_extractor import PDFExtractor
 from eenhance.utils.config import load_config
@@ -25,7 +25,7 @@ class ContentExtractor:
         Initialize the ContentExtractor.
         """
         self.youtube_transcriber = YouTubeTranscriber()
-        self.bilibili_transcriber = BiliBiliTranscriber()
+        # self.bilibili_transcriber = BiliBiliTranscriber()
         self.website_extractor = WebsiteExtractor()
         self.pdf_extractor = PDFExtractor()
         self.config = load_config()

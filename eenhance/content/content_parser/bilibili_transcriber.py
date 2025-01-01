@@ -1,4 +1,3 @@
-from bilibili_api import video, Credential, sync, get_real_url
 from eenhance.utils.config import load_config
 from eenhance.constants import PROJECT_ROOT_PATH
 from typing import List
