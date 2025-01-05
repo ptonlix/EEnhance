@@ -59,3 +59,4 @@ class ResearchGraphState(TypedDict):
     content: str  # Content for the final report
     conclusion: str  # Conclusion for the final report
     final_report: str  # Final report
+    final_report_file: str

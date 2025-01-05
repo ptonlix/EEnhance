@@ -8,6 +8,8 @@ from langgraph.checkpoint.memory import MemorySaver
 from .schemas import GenerateAnalystsState, ResearchGraphState, Perspectives
 from .interview_assistant import interview_builder
 from eenhance.utils.llm import llm_factory
+from pathlib import Path
+from eenhance.constants import PROJECT_ROOT_PATH
 import logging
 
 logger = logging.getLogger(__name__)
@@ -33,7 +35,6 @@ analyst_instructions = """你的任务是创建一组AI分析师角色。请仔�
 
 def create_analysts(state: GenerateAnalystsState):
     """Create analysts"""
-    logger.error(f"Creating analysts with state: {state}")
     topic = state["topic"]
     max_analysts = state["max_analysts"]
     human_analyst_feedback = state.get("human_analyst_feedback", "")
@@ -237,7 +238,20 @@ def finalize_report(state: ResearchGraphState):
     )
     if sources is not None:
         final_report += "\n\n## 来源\n" + sources
-    return {"final_report": final_report}
+    # 保存报告到文件
+    report_dir = Path(PROJECT_ROOT_PATH) / "data" / "report"
+    report_dir.mkdir(parents=True, exist_ok=True)
+
+    # 使用主题名称作为文件名
+    file_name = f"{state['topic']}.md"
+    report_file = report_dir / file_name
+
+    # 写入报告内容
+    with open(report_file, "w", encoding="utf-8") as f:
+        f.write(final_report)
+
+    logger.info(f"研究报告已保存到: {report_file}")
+    return {"final_report": final_report, "final_report_file": report_file}
 
 
 # Add nodes and edges

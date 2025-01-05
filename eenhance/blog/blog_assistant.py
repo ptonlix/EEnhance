@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 # 研究主题助手的输入参数
 class BlogInput(TypedDict):
-    research_report: str  # 研究报告
-    research_report_file: str  # 研究报告保存路径
+    final_report: str  # 研究报告
+    final_report_file: str  # 研究报告保存路径
     regenerate: bool  # 是否需要重新生成文案
 
 
@@ -37,18 +37,18 @@ def generate_blog(state: BlogInput) -> BlogOutput:
             conversation_config=config_conversation,
         )
 
-        if state.get("research_report"):
-            research_report = state["research_report"]
+        if state.get("final_report"):
+            final_report = state["final_report"]
         else:
             # 读取研究报告内容
-            with open(state["research_report_file"], "r") as file:
-                research_report = file.read()
+            with open(state["final_report_file"], "r") as file:
+                final_report = file.read()
 
-        print(research_report)
-        file_name = Path(state["research_report_file"]).stem + "_blog.txt"
+        print(final_report)
+        file_name = Path(state["final_report_file"]).stem + "_blog.txt"
         filepath = Path(PROJECT_ROOT_PATH) / "data" / "transcripts" / file_name
         qa_content = content_generator.generate_qa_content(
-            research_report,
+            final_report,
             image_file_paths=[],
             output_filepath=filepath,
             longform=True,
