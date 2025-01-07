@@ -35,7 +35,7 @@ def console_main():
     )
     ui.print_progress("内容获取", 1)
     for update in graph.stream(None, thread, stream_mode="updates", subgraphs=True):
-        ui.print_info(str(update))
+        print("\n" + str(update))
 
     time.sleep(2)
     ui.clear_log_area()
@@ -55,7 +55,7 @@ def console_main():
             for update in graph.stream(
                 None, thread, stream_mode="updates", subgraphs=True
             ):
-                ui.print_info(str(update))
+                print("\n" + str(update))
             time.sleep(2)
             ui.clear_log_area()
             ui.print_success("文章内容获取完成")
@@ -74,11 +74,11 @@ def console_main():
     # 2. 生成研究主题
     ui.print_step(2, total_steps, "生成研究主题")
     additional_info = ui.get_input("请输入生成研究主题的额外信息: ")
-    input_data["out_content"] = (
-        "文件分配方法对文件系统的性能和可靠性是基本且重要的。选择分配方法取决于各种因素，包括： "
-        "预期文件大小和访问模式 性能要求 存储设备特性 可靠性要求 系统资源 现代文件系统通常采用混合方法，"
-        "结合多种分配方法，以在不同使用案例中实现最优性能"
-    )
+    # input_data["out_content"] = (
+    #     "文件分配方法对文件系统的性能和可靠性是基本且重要的。选择分配方法取决于各种因素，包括： "
+    #     "预期文件大小和访问模式 性能要求 存储设备特性 可靠性要求 系统资源 现代文件系统通常采用混合方法，"
+    #     "结合多种分配方法，以在不同使用案例中实现最优性能"
+    # )
     input_data["additional_info"] = additional_info
     input_data["selected_topic"] = None
     input_data["regenerate"] = True
@@ -88,9 +88,13 @@ def console_main():
         state.tasks[0].state.config, input_data, as_node="human_feedback"
     )
 
-    ui.print_progress("主题生成", 1)
-    for update in graph.stream(None, thread, stream_mode="updates", subgraphs=True):
-        pass
+    with ui.progress_manager("研究主题生成中") as counter:
+        total_estimated = 5
+        for update in graph.stream(None, thread, stream_mode="updates", subgraphs=True):
+            i = next(counter)  # 获取当前迭代次数
+            progress = min(i / total_estimated, 1)  # 计算当前进度，确保不超过1
+            ui.print_progress("研究主题生成中", progress)
+
     state = graph.get_state(thread, subgraphs=True)
     event = state.tasks[0].state.values
     while True:
@@ -108,11 +112,14 @@ def console_main():
                 state.tasks[0].state.config, input_data, as_node="human_feedback"
             )
 
-            ui.print_progress("重新生成主题", 1)
-            for update in graph.stream(
-                None, thread, stream_mode="updates", subgraphs=True
-            ):
-                pass
+            with ui.progress_manager("研究主题生成中") as counter:
+                total_estimated = 5
+                for update in graph.stream(
+                    None, thread, stream_mode="updates", subgraphs=True
+                ):
+                    i = next(counter)  # 获取当前迭代次数
+                    progress = min(i / total_estimated, 1)  # 计算当前进度，确保不超过1
+                    ui.print_progress("研究主题生成中", progress)
         else:
             while True:
                 try:
@@ -151,40 +158,55 @@ def console_main():
             progress = min(i / total_estimated, 1)  # 计算当前进度，确保不超过1
             ui.print_progress("采访者生成中", progress)
 
-    state = graph.get_state(thread, subgraphs=True)
-    event = state.tasks[0].state.values
-    analyst_list = ""
-    for i, analyst in enumerate(event["analysts"], 1):
-        analyst_list += f"{i}. {analyst}\n"
     while True:
+        state = graph.get_state(thread, subgraphs=True)
+        event = state.tasks[0].state.values
+        analyst_list = ""
+        for i, analyst in enumerate(event["analysts"], 1):
+            analyst_list += f"{i}. {analyst}\n"
         user_input = ui.get_input(
             f"采访者列表如下:\n{analyst_list}\n确认使用采用这些采访者 (y/n): "
         )
         if user_input.lower() == "y":
             state = graph.get_state(thread, subgraphs=True)
             input_data["human_analyst_feedback"] = "approve"
-            graph.update_state(state.tasks[0].state.config, input_data)
+            graph.update_state(
+                state.tasks[0].state.config, input_data, as_node="human_feedback"
+            )
 
-            ui.print_progress("研究报告生成中", 1)
-            for update in graph.stream(
-                None, thread, stream_mode="updates", subgraphs=True
-            ):
-                print("\n" + str(update))
+            with ui.progress_manager("研究报告生成中") as counter:
+                total_estimated = 100
+                for update in graph.stream(
+                    None, thread, stream_mode="updates", subgraphs=True
+                ):
+                    i = next(counter)  # 获取当前迭代次数
+                    progress = min(i / total_estimated, 1)  # 计算当前进度，确保不超过1
+                    ui.print_progress("研究报告生成中", progress)
+                    print("\n" + str(update))
+
             break
         elif user_input.lower() == "n":
             state = graph.get_state(thread, subgraphs=True)
             input_data["human_analyst_feedback"] = "reject"
-            graph.update_staten(state.tasks[0].state.config, input_data)
-            for update in graph.stream(
-                None, thread, stream_mode="updates", subgraphs=True
-            ):
-                pass
-            break
+            graph.update_state(
+                state.tasks[0].state.config, input_data, as_node="human_feedback"
+            )
+            with ui.progress_manager("采访者生成中") as counter:
+                total_estimated = 10  # 估计的总迭代次数
+                for update in graph.stream(
+                    None, thread, stream_mode="values", subgraphs=True
+                ):
+                    i = next(counter)  # 获取当前迭代次数
+                    progress = min(i / total_estimated, 1)  # 计算当前进度，确保不超过1
+                    ui.print_progress("采访者生成中", progress)
+            ui.clear_log_area()
+
         else:
             ui.print_error("无效输入，请重试")
 
     ui.init_display_areas()
-    ui.print_success("研究报告生成成功")
+    state = graph.get_state(thread, subgraphs=True)
+    ui.print_success(f"研究报告生成成功,生成路径:{state.values['final_report_file']}")
     # 4. 生成博客文案
     ui.print_step(4, total_steps, "生成博客文案")
     state = graph.get_state(thread, subgraphs=True)
@@ -194,9 +216,15 @@ def console_main():
         graph.update_state(
             state.tasks[0].state.config, input_data, as_node="human_feedback"
         )
-        ui.print_progress("博客生成", 1)
-        for update in graph.stream(None, thread, stream_mode="values", subgraphs=True):
-            pass
+        ui.print_progress("博客文案生成", 1)
+        with ui.progress_manager("博客文案生成中") as counter:
+            total_estimated = 5
+            for update in graph.stream(
+                None, thread, stream_mode="values", subgraphs=True
+            ):
+                i = next(counter)  # 获取当前迭代次数
+                progress = min(i / total_estimated, 1)  # 计算当前进度，确保不超过1
+                ui.print_progress("博客文案生成中", progress)
 
         while True:
             user_input = ui.get_input("确认是否需要再生成博客文案 (y/n): ")
@@ -205,11 +233,16 @@ def console_main():
                 input_data["regenerate"] = True
                 graph.update_state(state.tasks[0].state.config, input_data)
 
-                ui.print_progress("重新生成博客", 1)
-                for update in graph.stream(
-                    None, thread, stream_mode="updates", subgraphs=True
-                ):
-                    print("\n" + str(update))
+                with ui.progress_manager("博客文案生成中") as counter:
+                    total_estimated = 5
+                    for update in graph.stream(
+                        None, thread, stream_mode="values", subgraphs=True
+                    ):
+                        i = next(counter)  # 获取当前迭代次数
+                        progress = min(
+                            i / total_estimated, 1
+                        )  # 计算当前进度，确保不超过1
+                        ui.print_progress("博客文案生成中", progress)
             elif user_input.lower() == "n":
                 state = graph.get_state(thread, subgraphs=True)
                 input_data["regenerate"] = False
@@ -217,7 +250,7 @@ def console_main():
                 for update in graph.stream(
                     None, thread, stream_mode="updates", subgraphs=True
                 ):
-                    print("\n" + str(update))
+                    pass
                 break
             else:
                 ui.print_error("无效输入，请重试")
@@ -225,6 +258,9 @@ def console_main():
         ui.print_success("跳过博客文案生成")
         return
 
+    ui.init_display_areas()
+    state = graph.get_state(thread, subgraphs=True)
+    ui.print_success(f"博客文案生成成功,生成路径:{state.values['blog_file_path']}")
     # 5. 生成博客音频
     ui.print_step(5, total_steps, "生成博客音频")
     state = graph.get_state(thread, subgraphs=True)
@@ -237,9 +273,14 @@ def console_main():
             state.tasks[0].state.config, input_data, as_node="human_feedback"
         )
 
-        ui.print_progress("音频生成", 1)
-        for update in graph.stream(None, thread, stream_mode="values", subgraphs=True):
-            print("\n" + str(update))
+        with ui.progress_manager("博客音频生成中") as counter:
+            total_estimated = 5
+            for update in graph.stream(
+                None, thread, stream_mode="values", subgraphs=True
+            ):
+                i = next(counter)  # 获取当前迭代次数
+                progress = min(i / total_estimated, 1)  # 计算当前进度，确保不超过1
+                ui.print_progress("博客音频生成中", progress)
 
         while True:
             user_input = ui.get_input("确认是否需要重新生成博客音频 (y/n): ")
@@ -250,11 +291,16 @@ def console_main():
                 state = graph.get_state(thread, subgraphs=True)
                 graph.update_state(state.tasks[0].state.config, input_data)
 
-                ui.print_progress("重新生成音频", 1)
-                for update in graph.stream(
-                    None, thread, stream_mode="updates", subgraphs=True
-                ):
-                    print("\n" + str(update))
+                with ui.progress_manager("博客音频生成中") as counter:
+                    total_estimated = 5
+                    for update in graph.stream(
+                        None, thread, stream_mode="values", subgraphs=True
+                    ):
+                        i = next(counter)  # 获取当前迭代次数
+                        progress = min(
+                            i / total_estimated, 1
+                        )  # 计算当前进度，确保不超过1
+                        ui.print_progress("博客音频生成中", progress)
             elif user_input.lower() == "n":
                 input_data["tts_is_open"] = False
                 state = graph.get_state(thread, subgraphs=True)
@@ -262,7 +308,7 @@ def console_main():
                 for update in graph.stream(
                     None, thread, stream_mode="updates", subgraphs=True
                 ):
-                    print("\n" + str(update))
+                    pass
                 break
             else:
                 ui.print_error("无效输入，请重试")
@@ -270,7 +316,10 @@ def console_main():
         ui.print_success("跳过音频生成")
         return
 
-    ui.print_success("EEnhance 处理完成!")
+    ui.init_display_areas()
+    state = graph.get_state(thread, subgraphs=True)
+    ui.print_success(f"博客音频生成成功,生成路径:{state.values['audio_file_path']}")
+    ui.print_info("EEnhance End～")
 
 
 if __name__ == "__main__":

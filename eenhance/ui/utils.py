@@ -120,10 +120,10 @@ class ConsoleUI:
         # 重新打印所有存储的消息
         current_line = self.middle_start
         for msg, clr in self.middle_content:
+            if len(msg) == 0:
+                continue
             sys.stdout.write(f"\033[{current_line};0H")
             if clr:
-                if len(msg) == 0:
-                    continue
                 sys.stdout.write(f"{clr}{msg}{RESET_COLOR}")
             else:
                 sys.stdout.write(msg)
@@ -161,7 +161,9 @@ class ConsoleUI:
 
     def print_info(self, message: str):
         """在底部区域打印信息"""
-        self.print_to_bottom_area(f"{message}", SECONDARY_COLOR)
+        self.print_to_area(
+            message, self.bottom_start + 1, self.bottom_height, SECONDARY_COLOR
+        )
 
     def print_success(self, message: str):
         """在底部区域打印成功消息"""

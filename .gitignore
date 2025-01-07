@@ -149,3 +149,4 @@ wandb/
 *.bin
 
 settings-pro.yaml
+eenhance/data/*

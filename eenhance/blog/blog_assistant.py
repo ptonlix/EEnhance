@@ -44,7 +44,6 @@ def generate_blog(state: BlogInput) -> BlogOutput:
             with open(state["final_report_file"], "r") as file:
                 final_report = file.read()
 
-        print(final_report)
         file_name = Path(state["final_report_file"]).stem + "_blog.txt"
         filepath = Path(PROJECT_ROOT_PATH) / "data" / "transcripts" / file_name
         qa_content = content_generator.generate_qa_content(

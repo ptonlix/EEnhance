@@ -40,8 +40,6 @@ def tts(state: TTSInput) -> TTSOutput:
         ) as file:
             input_text = file.read()
 
-    print(input_text)
-
     tts_edge = TextToSpeech(model=state["tts_provider"])
     file_name = Path(state["blog_file_path"]).stem + "_tts.mp3"
     tts_output_file = Path(PROJECT_ROOT_PATH) / "data" / "audio" / file_name
