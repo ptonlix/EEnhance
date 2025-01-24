@@ -1,3 +1,7 @@
+"""
+博客文章写作助手
+"""
+
 from typing_extensions import TypedDict
 from langgraph.graph import StateGraph, START, END
 import logging

@@ -708,7 +708,6 @@ class ContentGenerator:
             ]
         )
 
-        print(composed_prompt_template)
         return composed_prompt_template, image_path_keys
 
     def generate_qa_content(

@@ -1,7 +1,10 @@
+"""
+播客音频生成助手
+"""
+
 from typing_extensions import TypedDict
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
-from ..utils.config import load_config
 from .text_to_speech import TextToSpeech
 import logging
 from pathlib import Path

@@ -1,4 +1,6 @@
-# 生成研究主题的Agent助手
+"""
+生成研究主题助手
+"""
 
 from typing_extensions import TypedDict
 from langgraph.graph import StateGraph, START, END

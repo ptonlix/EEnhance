@@ -1,3 +1,7 @@
+"""
+主题研究内容生成助手
+"""
+
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
