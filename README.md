@@ -27,9 +27,7 @@
 - 播客文案：[1. 中断处理中的优先级管理与嵌套中断机制优化研究\_blog.txt](./docs/demo/data/transcripts/1.%20中断处理中的优先级管理与嵌套中断机制优化研究_blog.txt)
 - 播客音频：合成采用 `Fish Audio`
 
-  <audio src="./docs/demo/data/audio/1.%20中断处理中的优先级管理与嵌套中断机制优化研究_blog_tts.mp3" preload="none" controls loop>
-  1. 中断处理中的优先级管理与嵌套中断机制优化研究\_blog_tts
-  </audio>
+[1.%20 中断处理中的优先级管理与嵌套中断机制优化研究\_blog_tts.mp3](./docs/demo/data/audio/1.%20中断处理中的优先级管理与嵌套中断机制优化研究_blog_tts.mp4)
 
 ## 📖 项目介绍
 
@@ -71,6 +69,7 @@ eenhance/
 
 ## 部署运行
 
+> [!Warning]  
 > 💡 目前本项目暂时只支持终端运行，Web 版正在路上
 
 - 安装依赖
