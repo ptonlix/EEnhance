@@ -28,7 +28,7 @@
 - 播客音频：合成采用 `Fish Audio`
 
   <video controls="" autoplay="" name="media">
-  <source src="./docs/demo/data/audio/1.%20中断处理中的优先级管理与嵌套中断机制优化研究_blog_tts.mp4" type="audio/mp3">
+  <source src="https://github.com/ptonlix/EEnhance/blob/main/docs/demo/data/audio/1.%20%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86%E4%B8%AD%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7%E7%AE%A1%E7%90%86%E4%B8%8E%E5%B5%8C%E5%A5%97%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E4%BC%98%E5%8C%96%E7%A0%94%E7%A9%B6_blog_tts.mp4?raw=true" type="audio/mp3">
   </video>
 
 ## 📖 项目介绍
