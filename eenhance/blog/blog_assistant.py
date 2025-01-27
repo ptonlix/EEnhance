@@ -37,7 +37,6 @@ def generate_blog(state: BlogInput) -> BlogOutput:
         config_conversation = conv_config.to_dict()
 
         content_generator = ContentGenerator(
-            model_name="glm-4-plus",
             conversation_config=config_conversation,
         )
 
