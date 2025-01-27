@@ -50,8 +50,8 @@ def test_tts_assistant():
 
 def test_blog_assistant():
     input_data = {
-        "research_report": "人工智能和机器学习正在改变我们的生活方式。深度学习模型能够识别图像、理解自然语言,并在各个领域取得突破性进展。",
-        "research_report_file": "data/reports/research_report.txt",
+        "final_report": "人工智能和机器学习正在改变我们的生活方式。深度学习模型能够识别图像、理解自然语言,并在各个领域取得突破性进展。",
+        "final_report_file": "data/reports/research_report.txt",
         "regenerate": False,
     }
     thread = {"configurable": {"thread_id": "1"}}
@@ -202,7 +202,7 @@ if __name__ == "__main__":
     config = load_config()
     print(config)
 
-    test_tavily_search()
+    test_blog_assistant()
     # test_topic_assistant()
 
     # test_research_assistant()
