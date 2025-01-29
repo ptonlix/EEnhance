@@ -1,4 +1,4 @@
-# EEnhance
+# 🚀 EEnhance
 
 简体中文 | [English](README-en.md)
 
@@ -13,6 +13,7 @@
 </p>
 <p align="center">
 <img alt="Python" src="https://img.shields.io/badge/Python-3.11.10%2B-blue"/>
+<img alt="DeepSeek" src="https://img.shields.io/badge/DeepSeek-V3-blue"/>
 <img alt="LangChain" src="https://img.shields.io/badge/LangChain-0.3.21+-yellowgreen"/>
 <img alt="LangGraph" src="https://img.shields.io/badge/LangGraph-0.2.35+-yellow"/>
 <img alt="license" src="https://img.shields.io/badge/license-MIT-lightgrey"/>
