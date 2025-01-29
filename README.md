@@ -30,7 +30,7 @@
 **示例二：**
 
 - URL 地址：[69 天探索操作系统-第 41 天：进程同步](https://juejin.cn/post/7462210754361376779)
-- 研究报告：[1. 中断处理中的优先级管理与嵌套中断机制优化研究.md](./docs/demo/data/report/1.基于无锁编程的并发数据结构优化研究_blog.md)
+- 研究报告：[1. 基于无锁编程的并发数据结构优化研究.md](./docs/demo/data/report/1.基于无锁编程的并发数据结构优化研究_blog.md)
 - 播客文案：[1. 基于无锁编程的并发数据结构优化研究\_blog.txt](./docs/demo/data/transcripts/1.基于无锁编程的并发数据结构优化研究_blog.txt)
 - 播客音频：合成采用 `Fish Audio`
 
@@ -63,7 +63,7 @@
 
 ## 📖 项目介绍
 
-通过 5 个 Sub-Agent 组合构建出一个研究和创作工具 Agent，能够完成从在线网站提取文章内容，确定研究主题到生成研究报告、播客文案和音频合成等全工作流。
+采用 DeepSeek 通过 5 个 Sub-Agent 组合构建出一个研究和创作工具 Agent，能够完成从在线网站提取文章内容，确定研究主题到生成研究报告、播客文案和音频合成等全工作流。
 
 <p align="center">
 		<img height=500 src="./docs/pic/arch.png"><br>
@@ -123,9 +123,6 @@ vim .env
 ```ini
 TAVILY_API_KEY=xxx ## Tavily 搜索API
 
-GLM_API_BASE=https://open.bigmodel.cn/api/paas/v4/
-GLM_API_KEY=xxx ## Blog Agent用到，可以尝试使用模型
-
 DEEPSEEK_API_BASE=https://api.deepseek.com/v1
 DEEPSEEK_API_KEY=xxx # Topic Agent & Research Agent 用到，可以尝试使用其它模型
 
@@ -147,3 +144,27 @@ python -m eenhance
 ![演示](./docs/pic/image.png)
 
 根据终端指示，复制粘贴 URL 地址，随后一步步完成整个工作流
+
+## 🚩 Roadmap
+
+- [] 构建网页版本，方便流程体验
+
+## 🌏 项目交流讨论
+
+<img height=240 src="https://img.gejiba.com/images/f0cf4242e87615dff574806169f9732a.png"/>
+
+🎉 扫码联系作者，如果你也对本项目感兴趣  
+🎉 欢迎加入 LangChain-X (帝阅开发社区) 项目群参与讨论交流
+
+## 💥 贡献
+
+欢迎大家贡献力量，一起共建 EEnhance，您可以做任何有益事情
+
+- 报告错误
+- 建议改进
+- 文档贡献
+- 代码贡献  
+  ...  
+  👏👏👏
+
+---

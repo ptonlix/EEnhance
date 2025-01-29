@@ -10,7 +10,7 @@ LOGO = """
 ███████╗███████╗██║ ╚████║██║  ██║██║  ██║██║ ╚████║╚██████╗███████╗
 ╚══════╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝╚══════╝
 
-一个创作效率提升工具 / A tool for improving creative efficiency
+基于LangGraph的研究报告播客生成Agent / LangGraph based research report podcast generation agent
 
 作者/Author: Baird
 版本/Version: 0.0.1
